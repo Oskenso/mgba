@@ -139,12 +139,12 @@ void drawBuffer(color_t *pix) {
 
     for (int i = 0; i < (160*128); i++) {
 		uint8_t buffer[BYTES_PER_PIXEL];
-		buffer[0] = pix[i*BYTES_PER_PIXEL] >> 16;
-		buffer[1] = pix[i*BYTES_PER_PIXEL] >> 8;
-		buffer[2] = pix[i*BYTES_PER_PIXEL];
+		buffer[0] = pix[i] >> 16;
+		buffer[1] = pix[i] >> 8;
+		buffer[2] = pix[i];
         digitalWrite(P_CS, 0);
         digitalWrite(P_RS, 1);
-        digitalWriteByte(buffer[0]);
+        digitalWriteByte(buffer[2]);
         digitalWrite(P_RW, 0);
         digitalWrite(P_E, 1);
         digitalWrite(P_E, 0);
@@ -160,7 +160,7 @@ void drawBuffer(color_t *pix) {
 
         digitalWrite(P_CS, 0);
         digitalWrite(P_RS, 1);
-        digitalWriteByte(buffer[2]);
+        digitalWriteByte(buffer[1]);
         digitalWrite(P_RW, 0);
         digitalWrite(P_E, 1);
         digitalWrite(P_E, 0);

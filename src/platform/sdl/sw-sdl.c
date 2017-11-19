@@ -106,7 +106,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		// }
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, 160);
+			///renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, 160 / BYTES_PER_PIXEL);
 			drawBuffer(renderer->outputBuffer);
 // #if SDL_VERSION_ATLEAST(2, 0, 0)
 // 			SDL_UnlockTexture(renderer->sdlTex);
