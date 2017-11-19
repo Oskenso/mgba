@@ -11,6 +11,133 @@
 #include <mgba-util/arm-algo.h>
 
 
+
+void displaySend(uint8_t t, uint8_t d) {
+	digitalWrite(P_CS, 0);
+	digitalWrite(P_RS, t);
+	digitalWriteByte(d);
+    digitalWrite(P_RW, 0);
+    digitalWrite(P_E, 1);
+    digitalWrite(P_E, 0);
+    digitalWrite(P_CS, 1);
+}
+
+void displaySetReg(uint8_t c, uint8_t d) {
+	displaySend(COMMAND, c);
+	displaySend(DATA, d);
+}
+
+void displaySetColumnAddress(uint8_t startX, uint8_t endX) {
+	displaySetReg(0x17, startX);
+	displaySetReg(0x18, endX);
+}
+
+void displaySetRowAddress(uint8_t startY, uint8_t endY) {
+	displaySetReg(0x19, startY);
+	displaySetReg(0x1A, endY);
+}
+
+//Begin write to RAM
+void screenWriteMemoryStart() {
+	displaySend(COMMAND, 0x22);
+}
+
+void initDisplay() {
+	//digitalWrite(P_CPU, 0);
+	//digitalWrite(P_PS, 0);
+
+	digitalWrite(P_RES, 0);
+	delay(100);
+	digitalWrite(P_RES, 1);
+	delay(100);
+
+	//displaySend(COMMAND, 0x04);
+	//displaySend(DATA, 0x03);
+	//delay(2);
+
+	//half driving current
+	displaySetReg(0x04, 0x04);
+
+	displaySetReg(0x3B, 0x00);
+	displaySetReg(0x02, 0x01);//export1 pin at interal
+
+	displaySetReg(0x03, 0x90);//120hz
+	displaySetReg(0x80, 0x01);//ref voltage
+
+	displaySetReg(0x08, 0x04);
+	displaySetReg(0x09, 0x05);
+	displaySetReg(0x0A, 0x05);
+
+	displaySetReg(0x0B, 0x9D);
+	displaySetReg(0x0C, 0x8C);
+	displaySetReg(0x0D, 0x57);//pre charge of blue
+	displaySetReg(0x10, 0x56);
+	displaySetReg(0x11, 0x4D);
+	displaySetReg(0x12, 0x46);
+	displaySetReg(0x13, 0x00);//set color sequence
+
+	displaySetReg(0x14, 0x01);// Set MCU Interface Mode
+	displaySetReg(0x16, 0x76);// Set Memory Write Mode
+
+	//shift mapping ram counter
+	displaySetReg(0x20, 0x00);
+	displaySetReg(0x21, 0x00);
+	displaySetReg(0x28, 0x7F);// 1/128 Duty (0x0F~0x7F)
+	displaySetReg(0x29, 0x00);// Set Mapping RAM Display Start Line (0x00~0x7F)
+	displaySetReg(0x06, 0x01);// Display On (0x00/0x01)
+
+	// Set All Internal Register Value as Normal Mode
+	displaySetReg(0x05, 0x00); // Disable Power Save Mode
+
+	// Set RGB Interface Polarity as Active Low
+	displaySetReg(0x15, 0x00);
+
+	displaySetColumnAddress(0, 159);
+	displaySetRowAddress(0, 127);
+}
+
+void screenSetPos(uint8_t x, uint8_t y) {
+	displaySetReg(0x20, x);
+	displaySetReg(0x21, y);
+}
+
+
+void drawBuffer(color_t *pix) {
+    screenWriteMemoryStart();
+
+    for (int i = 0; i < (160*128); i++) {
+		uint8_t buffer[BYTES_PER_PIXEL];
+		buffer[0] = pix[i] >> 16;
+		buffer[1] = pix[i] >> 8;
+		buffer[2] = pix[i];
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[2]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
+
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[1]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
+
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[1]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
+    }
+}
+
+
+
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLSWDeinit(struct mSDLRenderer* renderer);
@@ -19,17 +146,30 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLSWInit;
 	renderer->deinit = mSDLSWDeinit;
 	renderer->runloop = mSDLSWRunloop;
+
+
+
+	wiringPiSetup();
+	//pinMode(P_CPU, OUTPUT);
+	pinMode(P_PS, OUTPUT);
+	pinMode(P_RES, OUTPUT);
+	pinMode(P_RS, OUTPUT);
+
+	pinMode(P_RW, OUTPUT);
+	pinMode(P_E, OUTPUT);
+	pinMode(P_CS, OUTPUT);
+	pinMode(0, OUTPUT);
+	pinMode(1, OUTPUT);
+	pinMode(2, OUTPUT);
+	pinMode(3, OUTPUT);
+	pinMode(4, OUTPUT);
+	pinMode(5, OUTPUT);
+	pinMode(6, OUTPUT);
+	pinMode(7, OUTPUT);
+
 }
 
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
-// #if !SDL_VERSION_ATLEAST(2, 0, 0)
-// #ifdef COLOR_16_BIT
-// 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
-// #else
-// 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_DOUBLEBUF | SDL_HWSURFACE);
-// #endif
-// #endif
-
 	unsigned width, height;
 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
 
@@ -38,57 +178,8 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
-// #if SDL_VERSION_ATLEAST(2, 0, 0)
-// 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
-// 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-// 	renderer->player.window = renderer->window;
-// 	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-// #ifdef COLOR_16_BIT
-// #ifdef COLOR_5_6_5
-// 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, width, height);
-// #else
-// 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, width, height);
-// #endif
-// #else
-// 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, height);
-// #endif
-//
-// 	int stride;
-// 	SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->outputBuffer, &stride);
-// 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, stride / BYTES_PER_PIXEL);
-// #else
-// 	SDL_Surface* surface = SDL_GetVideoSurface();
-// 	SDL_LockSurface(surface);
-//
-// 	if (renderer->ratio == 1) {
-// 		renderer->core->setVideoBuffer(renderer->core, surface->pixels, surface->pitch / BYTES_PER_PIXEL);
-// 	} else {
-// #ifdef USE_PIXMAN
-// 		renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
-// 		renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
-// #ifdef COLOR_16_BIT
-// #ifdef COLOR_5_6_5
-// 		pixman_format_code_t format = PIXMAN_r5g6b5;
-// #else
-// 		pixman_format_code_t format = PIXMAN_x1b5g5r5;
-// #endif
-// #else
-// 		pixman_format_code_t format = PIXMAN_x8b8g8r8;
-// #endif
-// 		renderer->pix = pixman_image_create_bits(format, width, height,
-// 		    renderer->outputBuffer, width * BYTES_PER_PIXEL);
-// 		renderer->screenpix = pixman_image_create_bits(format, renderer->viewportWidth, renderer->viewportHeight, surface->pixels, surface->pitch);
-//
-// 		pixman_transform_t transform;
-// 		pixman_transform_init_identity(&transform);
-// 		pixman_transform_scale(0, &transform, pixman_int_to_fixed(renderer->ratio), pixman_int_to_fixed(renderer->ratio));
-// 		pixman_image_set_transform(renderer->pix, &transform);
-// 		pixman_image_set_filter(renderer->pix, PIXMAN_FILTER_NEAREST, 0, 0);
-// #else
-// 		return false;
-// #endif
-// 	}
-// #endif
+	digitalWrite(P_PS, 1);
+	initDisplay();
 
 	return true;
 }
