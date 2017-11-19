@@ -139,9 +139,9 @@ void drawBuffer(color_t *pix) {
         digitalWrite(P_CS, 1);
     }
 }
-
-void drawFrameBuffer(color_t c) {
-	fseek(fp, 0, SEEK_SET);
+FILE *sysfb;
+void drawFrameBuffer(color_t *c) {
+	fseek(sysfb, 0, SEEK_SET);
 	fwrite(c, 4, 160*128, sysfb);
 }
 
@@ -174,7 +174,7 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	pinMode(7, OUTPUT);
 */
 }
-FILE *sysfb;
+
 
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
