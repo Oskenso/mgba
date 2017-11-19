@@ -96,52 +96,15 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
-// #if !SDL_VERSION_ATLEAST(2, 0, 0)
-// 	SDL_Surface* surface = SDL_GetVideoSurface();
-// #endif
 
 	while (mCoreThreadIsActive(context)) {
-		// while (SDL_PollEvent(&event)) {
-		// 	mSDLHandleEvent(context, &renderer->player, &event);
-		// }
+		while (SDL_PollEvent(&event)) {
+			mSDLHandleEvent(context, &renderer->player, &event);
+		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			///renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, 160 / BYTES_PER_PIXEL);
 			drawBuffer(renderer->outputBuffer);
-// #if SDL_VERSION_ATLEAST(2, 0, 0)
-// 			SDL_UnlockTexture(renderer->sdlTex);
-// 			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
-// 			SDL_RenderPresent(renderer->sdlRenderer);
-// 			int stride;
-// 			SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->outputBuffer, &stride);
-// 			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, stride / BYTES_PER_PIXEL);
-// #else
-// #ifdef USE_PIXMAN
-// 			if (renderer->ratio > 1) {
-// 				pixman_image_composite32(PIXMAN_OP_SRC, renderer->pix, 0, renderer->screenpix,
-// 				    0, 0, 0, 0, 0, 0,
-// 				    renderer->viewportWidth, renderer->viewportHeight);
-// 			}
-// #else
-// 			switch (renderer->ratio) {
-// #if defined(__ARM_NEON) && COLOR_16_BIT
-// 			case 2:
-// 				_neon2x(surface->pixels, renderer->outputBuffer, width, height);
-// 				break;
-// 			case 4:
-// 				_neon4x(surface->pixels, renderer->outputBuffer, width, height);
-// 				break;
-// #endif
-// 			case 1:
-// 				break;
-// 			default:
-// 				abort();
-// 			}
-// #endif
-// 			SDL_UnlockSurface(surface);
-// 			SDL_Flip(surface);
-// 			SDL_LockSurface(surface);
-// #endif
+
 		}
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
@@ -151,12 +114,6 @@ void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
 	}
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_Surface* surface = SDL_GetVideoSurface();
-	SDL_UnlockSurface(surface);
-#ifdef USE_PIXMAN
-	pixman_image_unref(renderer->pix);
-	pixman_image_unref(renderer->screenpix);
-#endif
-#endif
+	displaySend(COMMAND, 0x04);//power save
+	displaySend(DATA, 0x05);// 1/2 driving current, display off
 }

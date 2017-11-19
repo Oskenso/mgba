@@ -418,10 +418,10 @@ puts(">:3");
 
 static bool mSDLInit(struct mSDLRenderer* renderer) {
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("Could not initialize video: %s\n", SDL_GetError());
-		return false;
-	}
+	// if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	// 	printf("Could not initialize video: %s\n", SDL_GetError());
+	// 	return false;
+	// }
 
 	return renderer->init(renderer);
 }
@@ -429,9 +429,6 @@ static bool mSDLInit(struct mSDLRenderer* renderer) {
 static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	mSDLDeinitEvents(&renderer->events);
 	mSDLDeinitAudio(&renderer->audio);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_DestroyWindow(renderer->window);
-#endif
 
 	renderer->deinit(renderer);
 

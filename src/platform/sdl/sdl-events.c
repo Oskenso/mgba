@@ -50,9 +50,10 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
 		mLOG(SDL_EVENTS, ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
 	}
+	/*
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 		mLOG(SDL_EVENTS, ERROR, "SDL video initialization failed: %s", SDL_GetError());
-	}
+	}*/
 #endif
 
 	SDL_JoystickEventState(SDL_ENABLE);
@@ -575,28 +576,23 @@ static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct S
 
 void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
-	case SDL_QUIT:
-		mCoreThreadEnd(context);
-		break;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	case SDL_WINDOWEVENT:
-		_mSDLHandleWindowEvent(sdlContext, &event->window);
-		break;
-#endif
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
-		_mSDLHandleKeypress(context, sdlContext, &event->key);
-		break;
-	case SDL_JOYBUTTONDOWN:
-	case SDL_JOYBUTTONUP:
-		_mSDLHandleJoyButton(context, sdlContext, &event->jbutton);
-		break;
-	case SDL_JOYHATMOTION:
-		_mSDLHandleJoyHat(context, sdlContext, &event->jhat);
-		break;
-	case SDL_JOYAXISMOTION:
-		_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
-		break;
+		case SDL_QUIT:
+			mCoreThreadEnd(context);
+			break;
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			_mSDLHandleKeypress(context, sdlContext, &event->key);
+			break;
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYBUTTONUP:
+			_mSDLHandleJoyButton(context, sdlContext, &event->jbutton);
+			break;
+		case SDL_JOYHATMOTION:
+			_mSDLHandleJoyHat(context, sdlContext, &event->jhat);
+			break;
+		case SDL_JOYAXISMOTION:
+			_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+			break;
 	}
 }
 
