@@ -46,6 +46,8 @@ static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
 int main(int argc, char** argv) {
 
+	//sepsBuffer = malloc (sizeof(uint8_t) * 160*128*3);
+
 	struct mSDLRenderer renderer = {0};
 
 	struct mCoreOptions opts = {

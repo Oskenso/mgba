@@ -109,7 +109,7 @@ void screenSetPos(uint8_t x, uint8_t y) {
 void drawBuffer(color_t *pix) {
     screenWriteMemoryStart();
 
-    for (int i = 0; i < (144*128); i++) {
+    for (int i = 0; i < (160*128); i++) {
 		uint8_t buffer[BYTES_PER_PIXEL];
 		buffer[0] = pix[i] >> 16;
 		buffer[1] = pix[i] >> 8;
@@ -179,10 +179,8 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 
 
 	int stride = 160 * 3;
-	//renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
-	//renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
-	renderer->outputBuffer = malloc(144 * height * BYTES_PER_PIXEL);
-	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, 144);
+	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
 	digitalWrite(P_PS, 1);
 	initDisplay();
@@ -201,7 +199,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			if (fskip > 4)
+			if (fskip > 3)
 				drawBuffer(renderer->outputBuffer);
 			fskip = 0;
 		}
