@@ -85,13 +85,9 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
-#ifdef BUILD_GL
-	mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-	mSDLGLES2Create(&renderer);
-#else
+
 	mSDLSWCreate(&renderer);
-#endif
+
 
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
@@ -148,9 +144,9 @@ int main(int argc, char** argv) {
 	mSDLAttachPlayer(&renderer.events, &renderer.player);
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.core->setPeripheral(renderer.core, mPERIPH_RUMBLE, &renderer.player.rumble.d);
-#endif
+//#if SDL_VERSION_ATLEAST(2, 0, 0)
+//	renderer.core->setPeripheral(renderer.core, mPERIPH_RUMBLE, &renderer.player.rumble.d);
+//#endif
 
 	int ret;
 
@@ -220,19 +216,23 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	bool didFail = !mCoreThreadStart(&thread);
 	if (!didFail) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
-		unsigned width = renderer->width * renderer->ratio;
-		unsigned height = renderer->height * renderer->ratio;
-		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {
-			SDL_SetWindowSize(renderer->window, width, height);
-			renderer->player.windowUpdated = 1;
-		}
-		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
-		mSDLSuspendScreensaver(&renderer->events);
-#endif
+
+// #if SDL_VERSION_ATLEAST(2, 0, 0)
+// 		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
+// 		unsigned width = renderer->width * renderer->ratio;
+// 		unsigned height = renderer->height * renderer->ratio;
+// 		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {
+// 			SDL_SetWindowSize(renderer->window, width, height);
+// 			renderer->player.windowUpdated = 1;
+// 		}
+// 		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
+// 		mSDLSuspendScreensaver(&renderer->events);
+// #endif
+puts(">:3");
 		if (mSDLInitAudio(&renderer->audio, &thread)) {
+
 			renderer->runloop(renderer, &thread);
+
 			mSDLPauseAudio(&renderer->audio);
 			if (mCoreThreadHasCrashed(&thread)) {
 				didFail = true;
@@ -242,10 +242,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 			didFail = true;
 			printf("Could not initialize audio.\n");
 		}
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		mSDLResumeScreensaver(&renderer->events);
-		mSDLSetScreensaverSuspendable(&renderer->events, false);
-#endif
+// #if SDL_VERSION_ATLEAST(2, 0, 0)
+// 		mSDLResumeScreensaver(&renderer->events);
+// 		mSDLSetScreensaverSuspendable(&renderer->events, false);
+// #endif
 
 		mCoreThreadJoin(&thread);
 	} else {
@@ -261,10 +261,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 }
 
 static bool mSDLInit(struct mSDLRenderer* renderer) {
+	/*
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		return false;
-	}
+	}*/
 
 	return renderer->init(renderer);
 }
