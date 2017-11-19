@@ -181,7 +181,7 @@ void drawBuffer(uint8_t *buffer) {
 }
 
 
-uintt8_t *sepsBuffer;
+uint8_t *sepsBuffer;
 
 int main(int argc, char** argv) {
 
