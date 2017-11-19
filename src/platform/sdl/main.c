@@ -238,9 +238,7 @@ int main(int argc, char** argv) {
 	pinMode(6, OUTPUT);
 	pinMode(7, OUTPUT);
 
-	digitalWrite(P_PS, 1);
 
-	initDisplay();
 
 
 	renderer.ratio = graphicsOpts.multiplier;
@@ -264,6 +262,10 @@ int main(int argc, char** argv) {
 			vf->close(vf);
 		}
 	}
+
+
+	digitalWrite(P_PS, 1);
+	initDisplay();
 
 	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
 	mCoreInitConfig(renderer.core, PORT);
@@ -415,11 +417,11 @@ puts(">:3");
 }
 
 static bool mSDLInit(struct mSDLRenderer* renderer) {
-	/*
+
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		return false;
-	}*/
+	}
 
 	return renderer->init(renderer);
 }
