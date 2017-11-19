@@ -134,50 +134,38 @@ void screenSetPos(uint8_t x, uint8_t y) {
 }
 
 
-void drawBuffer(uint8_t *buffer) {
-    //FILE *sysfb;
-    //uint8_t *buffer;
+void drawBuffer(color_t *pix) {
+    screenWriteMemoryStart();
 
-    //sysfb = fopen("/dev/fb0/", "r");
-    //if (sysfb != NULL)
-    //{
-        //buffer = malloc (sizeof(uint8_t) * 160*128*4);
+    for (int i = 0; i < (160*128); i++) {
+		uint8_t buffer[BYTES_PER_PIXEL];
+		buffer[0] = pix[i*BYTES_PER_PIXEL] >> 16;
+		buffer[1] = pix[i*BYTES_PER_PIXEL] >> 8;
+		buffer[2] = pix[i*BYTES_PER_PIXEL];
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[0]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
 
-        //uint8_t result = fread(buffer, 160*128*4, 1, sysfb);
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[1]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
 
-        //fclose (sysfb);
-
-        screenWriteMemoryStart();
-        for (int i = 0; i < (160*128); i++) {
-            //uint8_t color = buffer[i+0] << 16 | buffer[i+1] << 8 | buffer[i+2];
-
-            digitalWrite(P_CS, 0);
-            digitalWrite(P_RS, 1);
-            digitalWriteByte(buffer[(i*3)+0]);
-            digitalWrite(P_RW, 0);
-            digitalWrite(P_E, 1);
-            digitalWrite(P_E, 0);
-            digitalWrite(P_CS, 1);
-
-            digitalWrite(P_CS, 0);
-            digitalWrite(P_RS, 1);
-            digitalWriteByte(buffer[(i*3)+1]);
-            digitalWrite(P_RW, 0);
-            digitalWrite(P_E, 1);
-            digitalWrite(P_E, 0);
-            digitalWrite(P_CS, 1);
-
-            digitalWrite(P_CS, 0);
-            digitalWrite(P_RS, 1);
-            digitalWriteByte(buffer[(i*3)+2]);
-            digitalWrite(P_RW, 0);
-            digitalWrite(P_E, 1);
-            digitalWrite(P_E, 0);
-            digitalWrite(P_CS, 1);
-        }
-
-        //free(buffer);
-    //}
+        digitalWrite(P_CS, 0);
+        digitalWrite(P_RS, 1);
+        digitalWriteByte(buffer[2]);
+        digitalWrite(P_RW, 0);
+        digitalWrite(P_E, 1);
+        digitalWrite(P_E, 0);
+        digitalWrite(P_CS, 1);
+    }
 }
 
 
