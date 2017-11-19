@@ -140,7 +140,10 @@ void drawBuffer(color_t *pix) {
     }
 }
 
-
+void drawFrameBuffer(color_t c) {
+	fseek(fp, 0, SEEK_SET);
+	fwrite(c, 4, 160*128, sysfb);
+}
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
@@ -152,9 +155,8 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	renderer->runloop = mSDLSWRunloop;
 
 
-
+/*
 	wiringPiSetup();
-	//pinMode(P_CPU, OUTPUT);
 	pinMode(P_PS, OUTPUT);
 	pinMode(P_RES, OUTPUT);
 	pinMode(P_RS, OUTPUT);
@@ -170,8 +172,9 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	pinMode(5, OUTPUT);
 	pinMode(6, OUTPUT);
 	pinMode(7, OUTPUT);
-
+*/
 }
+FILE *sysfb;
 
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
@@ -182,8 +185,9 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
-	digitalWrite(P_PS, 1);
-	initDisplay();
+	//digitalWrite(P_PS, 1);
+	//initDisplay();
+	sysfb = fopen("/dev/fb0/", "w");
 
 	return true;
 }
@@ -200,7 +204,8 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 			if (fskip > 3)
-				drawBuffer(renderer->outputBuffer);
+				//drawBuffer(renderer->outputBuffer);
+				drawFrameBuffer(renderer->outputBuffer);
 			fskip = 0;
 		}
 		fskip++;
@@ -213,6 +218,7 @@ void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
 	}
-	displaySend(COMMAND, 0x04);//power save
-	displaySend(DATA, 0x05);// 1/2 driving current, display off
+	//displaySend(COMMAND, 0x04);//power save
+	//displaySend(DATA, 0x05);// 1/2 driving current, display off
+	fclose(sysfb);
 }
