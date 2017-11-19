@@ -3,6 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* SEPS525 display support added by Oskenso Kashi <contact@oskenso.com>
+*
+ */
 #include "main.h"
 
 #include <mgba/core/core.h>
@@ -188,15 +192,19 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 
+	int fskip = 0;
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			drawBuffer(renderer->outputBuffer);
-
+			if (fskip > 2)
+				drawBuffer(renderer->outputBuffer);
+			fskip = 0;
 		}
+		fskip++;
+
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
 }
