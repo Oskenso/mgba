@@ -36,6 +36,31 @@ CXX_GUARD_START
 #include <pixman.h>
 #endif
 
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <signal.h>
+
+#include <wiringPi.h>
+#include <wiringPiSPI.h>
+#define P_RS 22 //D/C
+#define P_RW 23
+#define P_E 24
+#define P_RES 25
+#define P_PS 27
+#define P_CS 28
+
+#define COMMAND 0
+#define DATA 1
+#define CHANNEL 1
+
+
 struct mCore;
 struct mSDLRenderer {
 	struct mCore* core;
