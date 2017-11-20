@@ -142,6 +142,7 @@ void drawBuffer(color_t *pix) {
 FILE *sysfb;
 void drawFrameBuffer(FILE *fh, color_t *c) {
 	//sysfb = fopen("/dev/fb0", "w");
+	rewind(fh);
 	fwrite(c, 4, 160*128, fh);
 	//fclose(sysfb);
 }
