@@ -205,7 +205,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 		//	if (fskip > 1)
 				//drawBuffer(renderer->outputBuffer);
-				drawFrameBuffer(renderer->outputBuffer);
+				drawBuffer(renderer->outputBuffer);
 		//	fskip = 0;
 		}
 //		fskip++;
