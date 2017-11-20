@@ -141,8 +141,9 @@ void drawBuffer(color_t *pix) {
 }
 FILE *sysfb;
 void drawFrameBuffer(color_t *c) {
-	fseek(sysfb, 0, SEEK_SET);
+	sysfb = fopen("/dev/fb0", "w");
 	fwrite(c, 4, 160*128, sysfb);
+	fclose(sysfb);
 }
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
@@ -187,7 +188,8 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 
 	//digitalWrite(P_PS, 1);
 	//initDisplay();
-	sysfb = fopen("/dev/fb0/", "w");
+	puts("open");
+	//sysfb = fopen("/dev/fb0/", "w");
 
 	return true;
 }
@@ -203,12 +205,12 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			if (fskip > 3)
+		//	if (fskip > 1)
 				//drawBuffer(renderer->outputBuffer);
 				drawFrameBuffer(renderer->outputBuffer);
-			fskip = 0;
+		//	fskip = 0;
 		}
-		fskip++;
+//		fskip++;
 
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
@@ -220,5 +222,5 @@ void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	}
 	//displaySend(COMMAND, 0x04);//power save
 	//displaySend(DATA, 0x05);// 1/2 driving current, display off
-	fclose(sysfb);
+	//fclose(sysfb);
 }

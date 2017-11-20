@@ -1,4 +1,5 @@
 set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2 or 2)")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Ofast -march=native ")
 
 if (SDL_VERSION EQUAL "2")
 	include(FindPkgConfig)
