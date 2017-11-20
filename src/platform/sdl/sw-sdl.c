@@ -189,8 +189,6 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 
 	//digitalWrite(P_PS, 1);
 	//initDisplay();
-	puts("open");
-	//sysfb = fopen("/dev/fb0/", "w");
 
 	return true;
 }
@@ -199,7 +197,6 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 
-	int fskip = 0;
 	sysfb = fopen("/dev/fb0", "w");
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
@@ -207,12 +204,8 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-		//	if (fskip > 1)
-				//drawBuffer(renderer->outputBuffer);
-				drawFrameBuffer(sysfb, renderer->outputBuffer);
-		//	fskip = 0;
+			drawFrameBuffer(sysfb, renderer->outputBuffer);
 		}
-//		fskip++;
 
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
@@ -223,7 +216,7 @@ void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
 	}
+	
 	//displaySend(COMMAND, 0x04);//power save
 	//displaySend(DATA, 0x05);// 1/2 driving current, display off
-	//fclose(sysfb);
 }
