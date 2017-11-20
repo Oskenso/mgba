@@ -140,10 +140,10 @@ void drawBuffer(color_t *pix) {
     }
 }
 FILE *sysfb;
-void drawFrameBuffer(color_t *c) {
-	sysfb = fopen("/dev/fb0", "w");
-	fwrite(c, 4, 160*128, sysfb);
-	fclose(sysfb);
+void drawFrameBuffer(FILE *fh, color_t *c) {
+	//sysfb = fopen("/dev/fb0", "w");
+	fwrite(c, 4, 160*128, fh);
+	//fclose(sysfb);
 }
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
@@ -199,6 +199,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 
 	int fskip = 0;
+	sysfb = fopen("/dev/fb0", "w");
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
@@ -207,13 +208,14 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
 		//	if (fskip > 1)
 				//drawBuffer(renderer->outputBuffer);
-				drawFrameBuffer(renderer->outputBuffer);
+				drawFrameBuffer(sysfb, renderer->outputBuffer);
 		//	fskip = 0;
 		}
 //		fskip++;
 
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 	}
+	fclose(sysfb);
 }
 
 void mSDLSWDeinit(struct mSDLRenderer* renderer) {
