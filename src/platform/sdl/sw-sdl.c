@@ -139,12 +139,14 @@ void drawBuffer(color_t *pix) {
         digitalWrite(P_CS, 1);
     }
 }
+/*
 FILE *sysfb;
 void drawFrameBuffer(color_t *c) {
 	sysfb = fopen("/dev/fb0", "w");
 	fwrite(c, 4, 160*128, sysfb);
 	fclose(sysfb);
 }
+*/
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
@@ -156,7 +158,7 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	renderer->runloop = mSDLSWRunloop;
 
 
-/*
+
 	wiringPiSetup();
 	pinMode(P_PS, OUTPUT);
 	pinMode(P_RES, OUTPUT);
@@ -173,7 +175,7 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	pinMode(5, OUTPUT);
 	pinMode(6, OUTPUT);
 	pinMode(7, OUTPUT);
-*/
+
 }
 
 
@@ -181,15 +183,11 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
 
-
-	int stride = 160 * 3;
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
-	//digitalWrite(P_PS, 1);
-	//initDisplay();
-	puts("open");
-	//sysfb = fopen("/dev/fb0/", "w");
+	digitalWrite(P_PS, 1);
+	initDisplay();
 
 	return true;
 }
@@ -198,7 +196,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 
-	int fskip = 0;
+	//int fskip = 0;
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
@@ -220,7 +218,6 @@ void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
 	}
-	//displaySend(COMMAND, 0x04);//power save
-	//displaySend(DATA, 0x05);// 1/2 driving current, display off
-	//fclose(sysfb);
+	displaySend(COMMAND, 0x04);//power save
+	displaySend(DATA, 0x05);// 1/2 driving current, display off
 }
