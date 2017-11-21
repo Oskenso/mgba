@@ -16,7 +16,7 @@
 
 int sysfb;
 void drawFrameBuffer(int fh, color_t *c) {
-	pwrite(fh, c, 160*128*4, 0);
+	pwrite(fh, c, 160*144*4, 0);
 }
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
@@ -47,7 +47,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 
 	while (mCoreThreadIsActive(context)) {
-		
+
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 		}
