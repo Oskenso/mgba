@@ -14,15 +14,9 @@
 #include <mgba/core/version.h>
 #include <mgba-util/arm-algo.h>
 
-
-//FILE *sysfb;
 int sysfb;
 void drawFrameBuffer(int fh, color_t *c) {
-	//sysfb = fopen("/dev/fb0", "w");
-	//rewind(fh);
-	//fwrite(c, 4, 160*128, fh);
 	pwrite(fh, c, 160*128*4, 0);
-	//fclose(sysfb);
 }
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
@@ -43,8 +37,7 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
-	//digitalWrite(P_PS, 1);
-	//initDisplay();
+	sysfb = open("/dev/fb0", O_WRONLY);
 
 	return true;
 }
@@ -53,9 +46,8 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 
-	//sysfb = fopen("/dev/fb0", "w");
-	sysfb = open("/dev/fb0", O_WRONLY);
 	while (mCoreThreadIsActive(context)) {
+		
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
 		}
@@ -65,13 +57,15 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
+		SDL_Delay(1);
 	}
-	//fclose(sysfb);
-	close(sysfb);
+
+
 }
 
 void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
 	}
+	close(sysfb);
 }
