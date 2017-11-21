@@ -17,11 +17,11 @@
 
 //FILE *sysfb;
 int sysfb;
-void drawFrameBuffer(FILE *fh, color_t *c) {
+void drawFrameBuffer(int fh, color_t *c) {
 	//sysfb = fopen("/dev/fb0", "w");
 	//rewind(fh);
 	//fwrite(c, 4, 160*128, fh);
-	pwrite(sysfb, c, 160*128*4, 0);
+	pwrite(fh, c, 160*128*4, 0);
 	//fclose(sysfb);
 }
 
@@ -40,8 +40,6 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
 
-
-	int stride = 160 * 3;
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
@@ -56,7 +54,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 
 	//sysfb = fopen("/dev/fb0", "w");
-	sysfb = open("/dev/fb0", "O_WRONLY);
+	sysfb = open("/dev/fb0", O_WRONLY);
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
 			mSDLHandleEvent(context, &renderer->player, &event);
