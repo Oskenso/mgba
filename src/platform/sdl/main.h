@@ -74,6 +74,8 @@ struct mSDLRenderer {
 
 	unsigned width;
 	unsigned height;
+	unsigned int desiredWidth;
+	unsigned int desiredHeight;
 	int viewportWidth;
 	int viewportHeight;
 	int ratio;
