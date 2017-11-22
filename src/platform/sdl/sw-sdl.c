@@ -14,10 +14,13 @@
 #include <mgba/core/version.h>
 #include <mgba-util/arm-algo.h>
 
+#include "bilinear-resize.h"
+
 int sysfb;
 void drawFrameBuffer(int fh, color_t *c) {
 	pwrite(fh, c, 160*144*4, 0);
 }
+
 
 static bool mSDLSWInit(struct mSDLRenderer* renderer);
 static void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user);
@@ -29,12 +32,16 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 	renderer->runloop = mSDLSWRunloop;
 }
 
+uint32_t * fbOut;
 
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
+	renderer->desiredWidth = width;
+	renderer->desiredHeight = height;
 
 	renderer->outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
+	fbOut = malloc(160 * 128 * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, width);
 
 	sysfb = open("/dev/fb0", O_WRONLY);
@@ -53,7 +60,8 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			drawFrameBuffer(sysfb, renderer->outputBuffer);
+			resize_bilinear(renderer->outputBuffer, fbOut, renderer->desiredWidth, renderer->desiredHeight, 160, 128);
+			drawFrameBuffer(sysfb, fbOut);
 		}
 
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
@@ -66,6 +74,7 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->outputBuffer);
+		free(fbOut);
 	}
 	close(sysfb);
 }
