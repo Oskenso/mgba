@@ -270,10 +270,19 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 static bool mSDLInit(struct mSDLRenderer* renderer) {
 
-	// if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-	// 	printf("Could not initialize video: %s\n", SDL_GetError());
-	// 	return false;
-	// }
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("Could not initialize video: %s\n", SDL_GetError());
+		return false;
+	}
+
+
+	SDL_Window *win = SDL_CreateWindow("Hello World!", NULL, NULL, 100, 100, SDL_WINDOW_SHOWN);
+
+	if (win == NULL) {
+		printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
+		SDL_Quit();
+		return 1;
+	}
 
 	return renderer->init(renderer);
 }
