@@ -49,6 +49,30 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	return true;
 }
 
+void osky_resize(uint32_t *in, uint32_t *out) {
+	int offset = 0;
+	int w = 160;
+	int h = 128;
+	for (int i = 0; i < w * h; i++) {
+		int line = floor(i / w);
+		if ( ((i % w) == 0) && ((line % 8) == 1) && (line != 0)) {
+			offset += w;
+		}
+		uint8_t r,g,b;
+		if (offset >= w) {
+			r = (((in[i+offset] >> 16) & 0xFF) + ((in[i+offset-160] >> 16) & 0xFF)) / 2;
+			g = (((in[i+offset] >> 8) & 0xFF) + ((in[i+offset-160] >> 8) & 0xFF)) / 2;
+			b = (((in[i+offset]) & 0xFF) + ((in[i+offset-160]) & 0xFF)) / 2;
+		} else {
+			r = (((in[i+offset] >> 16) & 0xFF) );
+			g = (((in[i+offset] >> 8) & 0xFF) ) ;
+			b = (((in[i+offset]) & 0xFF));
+		}
+
+		out[i] = r << 16 | g << 8 | b;
+	}
+}
+
 void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
@@ -60,7 +84,8 @@ void mSDLSWRunloop(struct mSDLRenderer* renderer, void* user) {
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			resize_bilinear(renderer->outputBuffer, fbOut, renderer->desiredWidth, renderer->desiredHeight, 160, 128);
+			//resize_bilinear(renderer->outputBuffer, fbOut, renderer->desiredWidth, renderer->desiredHeight, 160, 128);
+			osky_resize(renderer->outputBuffer, fbOut);
 			drawFrameBuffer(sysfb, fbOut);
 		}
 
